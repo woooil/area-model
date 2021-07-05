@@ -70,7 +70,7 @@ function setTile(tile) {
     tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
-function createTile(){
+function createTile() {
     const tile = document.createElement("ul");
     tile.classList.add("tile");
     tile.setAttribute("tile-index", tileCount);
@@ -83,10 +83,12 @@ function createTile(){
     tile.addEventListener("touchmove", event => {
         event.preventDefault();
         const touchLocation = event.targetTouches[0];
-        tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
+        tile.style.left = (touchLocation.pageX - tileOffset.x) + 'px';
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
     });
-    tile.addEventListener("touchend", createTile);
+    tile.addEventListener("touchend", event => {
+        if (parseInt(event.target.parentElement.attributes["tile-index"].value) === tileCount - 1) createTile();
+    });
     tileContainer.appendChild(tile);
     newTile = document.querySelector(`ul[tile-index="${tileCount}"]`);
     tileCount++;
