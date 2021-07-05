@@ -60,6 +60,7 @@ function setTile() {
         const li = document.createElement("li");
         li.innerText = i;
         li.classList.add(`list${i}`);
+        li.setAttribute("draggable", "false");
         li.style.width = li.style.height = UNIT_SIZE;
         tile.appendChild(li);
     });
@@ -101,6 +102,17 @@ tile.addEventListener("touchmove", event => {
     tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
     tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
 })
+
+// tile.addEventListener("dragstart", event => {
+//     const tileRect = tile.getBoundingClientRect();
+//     tileOffset.x = event.pageX - tileRect.x;
+//     tileOffset.y = event.pageY - tileRect.y;
+// })
+
+// tile.addEventListener("dragover", event => {
+//     tile.style.left = (event.pageX - tileOffset.x)+ 'px';
+//     tile.style.top = (event.pageY - tileOffset.y) + 'px';
+// })
 
 // initiate
 
