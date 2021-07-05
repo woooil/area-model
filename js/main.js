@@ -3,8 +3,7 @@ const gridHeight = document.querySelector(".grid-height");
 const grid = document.querySelector(".grid");
 const tileWidth = document.querySelector(".tile-width");
 const tileHeight = document.querySelector(".tile-height");
-// const tile = document.querySelector(".tile");
-const tileContainer = document.querySelector(".tile-container");
+const tile = document.querySelector(".tile");
 const testField = document.querySelector("#test-field");
 
 const MAX_GRID_SIZE = 100;
@@ -54,11 +53,9 @@ function setGrid() {
 }
 
 function setTile() {
-    const tile = document.createElement("ul");
-    tile.classList.add("tile");
-
     const width = parseInt(tileSize.width);
     const height = parseInt(tileSize.height);
+    tile.innerHTML = "";
     Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
         li.innerText = i;
@@ -68,21 +65,6 @@ function setTile() {
         tile.appendChild(li);
     });
     tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
-
-    tile.addEventListener("touchstart", event => {
-        const touchLocation = event.targetTouches[0];
-        tileOffset.x = touchLocation.pageX - tile.offsetLeft;
-        tileOffset.y = touchLocation.pageY - tile.offsetTop;
-    })
-    
-    tile.addEventListener("touchmove", event => {
-        event.preventDefault();
-        const touchLocation = event.targetTouches[0];
-        tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
-        tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
-    })
-
-    tileContainer.appendChild(tile);
 }
 
 // events
@@ -106,6 +88,19 @@ tileHeight.addEventListener("input", event => {
     tileSize.height = event.target.value;
     setTile();
 });
+
+tile.addEventListener("touchstart", event => {
+    const touchLocation = event.targetTouches[0];
+    tileOffset.x = touchLocation.pageX - tile.offsetLeft;
+    tileOffset.y = touchLocation.pageY - tile.offsetTop;
+})
+
+tile.addEventListener("touchmove", event => {
+    event.preventDefault();
+    const touchLocation = event.targetTouches[0];
+    tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
+    tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
+})
 
 // tile.addEventListener("dragstart", event => {
 //     const tileRect = tile.getBoundingClientRect();
