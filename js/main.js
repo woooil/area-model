@@ -3,7 +3,7 @@ const gridHeight = document.querySelector(".grid-height");
 const grid = document.querySelector(".grid");
 const tileWidth = document.querySelector(".tile-width");
 const tileHeight = document.querySelector(".tile-height");
-const tile = document.querySelector(".tile");
+const tileContainer = document.querySelector(".tile-container");
 const testField = document.querySelector("#test-field");
 
 const MAX_GRID_SIZE = 100;
@@ -25,6 +25,9 @@ const tileOffset = {
     y: 0,
 };
 
+let tileCount = 0;
+let newTile = null;
+
 // functions
 
 function init() {
@@ -35,7 +38,7 @@ function init() {
     tileWidth.setAttribute("max", MAX_TILE_SIZE);
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
     setGrid();
-    setTile();
+    createTile();
 }
 
 function setGrid() {
@@ -52,7 +55,7 @@ function setGrid() {
     grid.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
-function setTile() {
+function setTile(tile) {
     const width = parseInt(tileSize.width);
     const height = parseInt(tileSize.height);
     tile.innerHTML = "";
@@ -65,6 +68,28 @@ function setTile() {
         tile.appendChild(li);
     });
     tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+}
+
+function createTile(){
+    const tile = document.createElement("ul");
+    tile.classList.add("tile");
+    tile.setAttribute("tile-index", tileCount);
+    setTile(tile);
+    tile.addEventListener("touchstart", event => {
+        const touchLocation = event.targetTouches[0];
+        tileOffset.x = touchLocation.pageX - tile.offsetLeft;
+        tileOffset.y = touchLocation.pageY - tile.offsetTop;
+    });
+    tile.addEventListener("touchmove", event => {
+        event.preventDefault();
+        const touchLocation = event.targetTouches[0];
+        tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
+        tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
+    });
+    tile.addEventListener("touchend", createTile);
+    tileContainer.appendChild(tile);
+    newTile = document.querySelector(`ul[tile-index="${tileCount}"]`);
+    tileCount++;
 }
 
 // events
@@ -81,37 +106,13 @@ gridHeight.addEventListener("input", event => {
 
 tileWidth.addEventListener("input", event => {
     tileSize.width = event.target.value;
-    setTile();
+    setTile(newTile);
 });
 
 tileHeight.addEventListener("input", event => {
     tileSize.height = event.target.value;
-    setTile();
+    setTile(newTile);
 });
-
-tile.addEventListener("touchstart", event => {
-    const touchLocation = event.targetTouches[0];
-    tileOffset.x = touchLocation.pageX - tile.offsetLeft;
-    tileOffset.y = touchLocation.pageY - tile.offsetTop;
-})
-
-tile.addEventListener("touchmove", event => {
-    event.preventDefault();
-    const touchLocation = event.targetTouches[0];
-    tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
-    tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
-})
-
-// tile.addEventListener("dragstart", event => {
-//     const tileRect = tile.getBoundingClientRect();
-//     tileOffset.x = event.pageX - tileRect.x;
-//     tileOffset.y = event.pageY - tileRect.y;
-// })
-
-// tile.addEventListener("dragover", event => {
-//     tile.style.left = (event.pageX - tileOffset.x)+ 'px';
-//     tile.style.top = (event.pageY - tileOffset.y) + 'px';
-// })
 
 // initiate
 
