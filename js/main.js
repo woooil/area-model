@@ -1,23 +1,26 @@
-const gridX = document.querySelector(".grid-x");
-const gridY = document.querySelector(".grid-y");
+const gridWidth = document.querySelector(".grid-width");
+const gridHeight = document.querySelector(".grid-height");
 const grid = document.querySelector(".grid");
-const tileX = document.querySelector(".tile-x");
-const tileY = document.querySelector(".tile-y");
+const tileWidth = document.querySelector(".tile-width");
+const tileHeight = document.querySelector(".tile-height");
 const tile = document.querySelector(".tile");
 const testField = document.querySelector("#test-field");
 
 const MAX_GRID_SIZE = 100;
 const INIT_GRID_SIZE = 10;
 const MAX_TILE_SIZE = 10;
-const INIT_TILE_SIZE = 1;
+const INIT_TILE_SIZE = 5;
 const UNIT_SIZE = "1.5rem";
 
 const gridSize = {
-    x: 0,
-    y: 0,
+    width: 0,
+    height: 0,
 };
-
 const tileSize = {
+    width: 0,
+    height: 0,
+};
+const tileOffset = {
     x: 0,
     y: 0,
 };
@@ -25,74 +28,78 @@ const tileSize = {
 // functions
 
 function init() {
-    gridX.value = gridY.value = gridSize.x = gridSize.y = INIT_GRID_SIZE;
-    gridX.setAttribute("max", MAX_GRID_SIZE);
-    gridY.setAttribute("max", MAX_GRID_SIZE);
-    tileX.value = tileY.value = tileSize.x = tileSize.y = INIT_TILE_SIZE;
-    tileX.setAttribute("max", MAX_TILE_SIZE);
-    tileY.setAttribute("max", MAX_TILE_SIZE);
+    gridWidth.value = gridHeight.value = gridSize.width = gridSize.height = INIT_GRID_SIZE;
+    gridWidth.setAttribute("max", MAX_GRID_SIZE);
+    gridHeight.setAttribute("max", MAX_GRID_SIZE);
+    tileWidth.value = tileHeight.value = tileSize.width = tileSize.height = INIT_TILE_SIZE;
+    tileWidth.setAttribute("max", MAX_TILE_SIZE);
+    tileHeight.setAttribute("max", MAX_TILE_SIZE);
     setGrid();
     setTile();
 }
 
 function setGrid() {
-    const x = parseInt(gridSize.x);
-    const y = parseInt(gridSize.y);
+    const width = parseInt(gridSize.width);
+    const height = parseInt(gridSize.height);
     grid.innerHTML = "";
-    Array(x * y).fill().forEach((_, i) => {
+    Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
         li.innerText = i;
         li.classList.add(`list${i}`);
         li.style.width = li.style.height = UNIT_SIZE;
         grid.appendChild(li);
     });
-    grid.style.gridTemplateColumns = `repeat(${x}, 1fr)`;
+    grid.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
 function setTile() {
-    // const li = document.createElement("li");
-    // li.style.width = li.style.height = UNIT_SIZE;
-    // li.style.backgroundColor = "gray";
-
-    const x = parseInt(tileSize.x);
-    const y = parseInt(tileSize.y);
+    const width = parseInt(tileSize.width);
+    const height = parseInt(tileSize.height);
     tile.innerHTML = "";
-    Array(x * y).fill().forEach((_, i) => {
+    Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
         li.innerText = i;
         li.classList.add(`list${i}`);
         li.style.width = li.style.height = UNIT_SIZE;
         tile.appendChild(li);
     });
-    tile.style.gridTemplateColumns = `repeat(${x}, 1fr)`;
+    tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
 // events
 
-gridX.addEventListener("input", event => {
-    gridSize.x = event.target.value;
+gridWidth.addEventListener("input", event => {
+    gridSize.width = event.target.value;
     setGrid();
 });
 
-gridY.addEventListener("input", event => {
-    gridSize.y = event.target.value;
+gridHeight.addEventListener("input", event => {
+    gridSize.height = event.target.value;
     setGrid();
 });
 
-tileX.addEventListener("input", event => {
-    tileSize.x = event.target.value;
+tileWidth.addEventListener("input", event => {
+    tileSize.width = event.target.value;
     setTile();
 });
 
-tileY.addEventListener("input", event => {
-    tileSize.y = event.target.value;
+tileHeight.addEventListener("input", event => {
+    tileSize.height = event.target.value;
     setTile();
 });
+
+tile.addEventListener("touchstart", event => {
+    const tileRect = tile.getBoundingClientRect();
+    const touchLocation = event.targetTouches[0];
+    tileOffset.x = touchLocation.pageX - tileRect.x;
+    tileOffset.y = touchLocation.pageY - tileRect.y;
+    console.log(touchLocation);
+})
 
 tile.addEventListener("touchmove", event => {
     const touchLocation = event.targetTouches[0];
-    tile.style.left = touchLocation.pageX + 'px';
-    tile.style.top = touchLocation.pageY + 'px';
+    tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
+    tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
 })
 
 // initiate

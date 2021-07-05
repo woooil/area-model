@@ -5,6 +5,8 @@
     box-sizing: border-box;
 }
 
+html, body {height: 100%; overflow: hidden}
+
 .wrap-all {
     display: flex;
     justify-content: center;
@@ -24,6 +26,7 @@ ul.grid {
 
 ul.tile{
     position: absolute;
+    top: 50%;
     list-style-type: none;
     display: grid;
 }
