@@ -5,7 +5,11 @@
     box-sizing: border-box;
 }
 
-html, body {height: 100%; overflow: hidden}
+html,
+body {
+    height: auto;
+    overflow: hidden
+}
 
 .wrap-all {
     display: flex;
@@ -24,9 +28,16 @@ ul.grid {
     border: 1px solid gray;
 }
 
-ul.tile{
+.tile-container {
+    /* background-color: green; */
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: auto;
+}
+
+ul.tile {
     position: absolute;
-    top: 50%;
     list-style-type: none;
     display: grid;
 }

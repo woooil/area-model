@@ -90,14 +90,13 @@ tileHeight.addEventListener("input", event => {
 });
 
 tile.addEventListener("touchstart", event => {
-    const tileRect = tile.getBoundingClientRect();
     const touchLocation = event.targetTouches[0];
-    tileOffset.x = touchLocation.pageX - tileRect.x;
-    tileOffset.y = touchLocation.pageY - tileRect.y;
-    console.log(touchLocation);
+    tileOffset.x = touchLocation.pageX - tile.offsetLeft;
+    tileOffset.y = touchLocation.pageY - tile.offsetTop;
 })
 
 tile.addEventListener("touchmove", event => {
+    event.preventDefault();
     const touchLocation = event.targetTouches[0];
     tile.style.left = (touchLocation.pageX - tileOffset.x)+ 'px';
     tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
