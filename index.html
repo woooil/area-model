@@ -8,13 +8,20 @@
 <body>
     <div class="wrap-all">
         <h1>Areal Model</h1>
-        <div class="grid-size-input">
+        <div class="grid-size">
             <input type="number" pattern="\d*" min="1" class="grid-x" placeholder="x">
             <input type="number" pattern="\d*" min="1" class="grid-y" placeholder="y">
         </div>
         <ul class="grid">
         </ul>
         <div>Above is a grid.</div>
+        <div class="tile-size">
+            <input type="number" pattern="\d*" min="1" class="tile-x" placeholder="x">
+            <input type="number" pattern="\d*" min="1" class="tile-y" placeholder="y">
+        </div>
+        <ul class="tile">
+        </ul>
+        <div>Above is a tile.</div>
         <div id="test-field"></div>
     </div>
     <script src="js/main.js"></script>
