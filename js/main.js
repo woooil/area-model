@@ -75,7 +75,7 @@ function setTile(tile) {
 
 function anchorTile(event) {
     const changedTouch = event.changedTouches[0];
-    const elem = Object.entries(document.elementsFromPoint(changedTouch.pageX, changedTouch.pageY));
+    const elem = Object.entries(document.elementsFromPoint(changedTouch.clientX, changedTouch.clientY));
     const isInGrid = elem.filter(item =>
         (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
     );
