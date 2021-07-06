@@ -38,40 +38,29 @@ function init() {
     tileWidth.value = tileHeight.value = tileSize.width = tileSize.height = INIT_TILE_SIZE;
     tileWidth.setAttribute("max", MAX_TILE_SIZE);
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
-    setGrid();
+    setUnits(grid, gridSize);
     createTile();
 }
 
-function setGrid() {
-    const width = gridSize.width;
-    const height = gridSize.height;
-    grid.innerHTML = "";
+function setUnits(cont, size) {
+    const width = size.width;
+    const height = size.height;
+    cont.innerHTML = "";
     Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
         li.innerText = i;
         li.setAttribute("list-index", i);
         li.classList.add(`list${i}`);
         li.style.width = li.style.height = UNIT_SIZE + "rem";
-        grid.appendChild(li);
+        cont.insertBefore(li, cont.querySelector(`[list-index='${i - width - i % width}']`));
     });
-    grid.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+    cont.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
-function setTile(tile) {
-    const width = tileSize.width;
-    const height = tileSize.height;
-    tile.innerHTML = "";
-    Array(width * height).fill().forEach((_, i) => {
-        const li = document.createElement("li");
-        li.innerText = i;
-        li.setAttribute("list-index", i);
-        li.classList.add(`list${i}`);
-        li.setAttribute("draggable", "false");
-        li.style.width = li.style.height = UNIT_SIZE + "rem";
-        tile.appendChild(li);
-    });
-    tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
-}
+/*
+function anchorTile():
+use 
+*/
 
 function anchorTile(event) {
     const changedTouch = event.changedTouches[0];
@@ -91,7 +80,7 @@ function createTile() {
     const tile = document.createElement("ul");
     tile.classList.add("tile");
     tile.setAttribute("tile-index", tileCount);
-    setTile(tile);
+    setUnits(tile, tileSize);
     tile.addEventListener("touchstart", event => {
         const touchLocation = event.targetTouches[0];
         tileOffset.x = touchLocation.pageX - tile.offsetLeft;
@@ -116,22 +105,22 @@ function createTile() {
 
 gridWidth.addEventListener("input", event => {
     gridSize.width = parseInt(event.target.value);
-    setGrid();
+    setUnits(grid, gridSize);
 });
 
 gridHeight.addEventListener("input", event => {
     gridSize.height = parseInt(event.target.value);
-    setGrid();
+    setUnits(grid, gridSize);
 });
 
 tileWidth.addEventListener("input", event => {
     tileSize.width = parseInt(event.target.value);
-    setTile(newTile);
+    setUnits(newTile, tileSize);
 });
 
 tileHeight.addEventListener("input", event => {
     tileSize.height = parseInt(event.target.value);
-    setTile(newTile);
+    setUnits(newTile, tileSize);
 });
 
 // initiate
