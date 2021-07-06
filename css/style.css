@@ -40,6 +40,7 @@ ul.tile {
     position: absolute;
     list-style-type: none;
     display: grid;
+    box-shadow: 0 0 0 1px tomato;
 }
 
 .tile-size {
