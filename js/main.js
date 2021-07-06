@@ -10,7 +10,8 @@ const MAX_GRID_SIZE = 100;
 const INIT_GRID_SIZE = 10;
 const MAX_TILE_SIZE = 10;
 const INIT_TILE_SIZE = 5;
-const UNIT_SIZE = "1.5rem";
+const UNIT_SIZE = 1.5;
+const PIXEL_PER_REM = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
 const gridSize = {
     width: 0,
@@ -42,32 +43,46 @@ function init() {
 }
 
 function setGrid() {
-    const width = parseInt(gridSize.width);
-    const height = parseInt(gridSize.height);
+    const width = gridSize.width;
+    const height = gridSize.height;
     grid.innerHTML = "";
     Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
         li.innerText = i;
+        li.setAttribute("list-index", i);
         li.classList.add(`list${i}`);
-        li.style.width = li.style.height = UNIT_SIZE;
+        li.style.width = li.style.height = UNIT_SIZE + "rem";
         grid.appendChild(li);
     });
     grid.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
 function setTile(tile) {
-    const width = parseInt(tileSize.width);
-    const height = parseInt(tileSize.height);
+    const width = tileSize.width;
+    const height = tileSize.height;
     tile.innerHTML = "";
     Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
         li.innerText = i;
+        li.setAttribute("list-index", i);
         li.classList.add(`list${i}`);
         li.setAttribute("draggable", "false");
-        li.style.width = li.style.height = UNIT_SIZE;
+        li.style.width = li.style.height = UNIT_SIZE + "rem";
         tile.appendChild(li);
     });
     tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
+}
+
+function anchorTile(event){
+    const changedTouch = event.changedTouches[0];
+    const elem = document.elementsFromPoint(changedTouch.pageX, changedTouch.pageY);
+    const itemTouchDown = Object.entries(elem).filter(item =>
+        (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
+    )[0][1];
+    const offsetX = parseInt(event.target.attributes["list-index"].value) % tileSize.width * UNIT_SIZE * PIXEL_PER_REM;
+    const offsetY = parseInt(parseInt(event.target.attributes["list-index"].value) / tileSize.width) * UNIT_SIZE * PIXEL_PER_REM;
+    event.target.parentElement.style.left = itemTouchDown.offsetLeft - offsetX + "px";
+    event.target.parentElement.style.top = itemTouchDown.offsetTop - offsetY + "px";
 }
 
 function createTile() {
@@ -87,16 +102,8 @@ function createTile() {
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
     });
     tile.addEventListener("touchend", event => {
-        const changedTouch = event.changedTouches[0];
-        const elem = document.elementsFromPoint(changedTouch.pageX, changedTouch.pageY);
-        const itemTouchDown = Object.entries(elem).filter(item =>
-            (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
-        )[0][1];
+        anchorTile(event);
         if (parseInt(event.target.parentElement.attributes["tile-index"].value) === tileCount - 1) createTile();
-        console.log(itemTouchDown.offsetTop, itemTouchDown.offsetLeft);
-        console.log(event.target.parentElement.style.top, event.target.parentElement.offsetLeft);
-        event.target.parentElement.style.top = itemTouchDown.offsetTop + "px";
-        event.target.parentElement.style.left = itemTouchDown.offsetLeft + "px";
     });
     tileContainer.appendChild(tile);
     newTile = document.querySelector(`ul[tile-index="${tileCount}"]`);
@@ -106,22 +113,22 @@ function createTile() {
 // events
 
 gridWidth.addEventListener("input", event => {
-    gridSize.width = event.target.value;
+    gridSize.width = parseInt(event.target.value);
     setGrid();
 });
 
 gridHeight.addEventListener("input", event => {
-    gridSize.height = event.target.value;
+    gridSize.height = parseInt(event.target.value);
     setGrid();
 });
 
 tileWidth.addEventListener("input", event => {
-    tileSize.width = event.target.value;
+    tileSize.width = parseInt(event.target.value);
     setTile(newTile);
 });
 
 tileHeight.addEventListener("input", event => {
-    tileSize.height = event.target.value;
+    tileSize.height = parseInt(event.target.value);
     setTile(newTile);
 });
 
