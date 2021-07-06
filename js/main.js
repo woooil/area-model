@@ -87,7 +87,16 @@ function createTile() {
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
     });
     tile.addEventListener("touchend", event => {
+        const changedTouch = event.changedTouches[0];
+        const elem = document.elementsFromPoint(changedTouch.pageX, changedTouch.pageY);
+        const itemTouchDown = Object.entries(elem).filter(item =>
+            (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
+        )[0][1];
         if (parseInt(event.target.parentElement.attributes["tile-index"].value) === tileCount - 1) createTile();
+        console.log(itemTouchDown.offsetTop, itemTouchDown.offsetLeft);
+        console.log(event.target.parentElement.style.top, event.target.parentElement.offsetLeft);
+        event.target.parentElement.style.top = itemTouchDown.offsetTop + "px";
+        event.target.parentElement.style.left = itemTouchDown.offsetLeft + "px";
     });
     tileContainer.appendChild(tile);
     newTile = document.querySelector(`ul[tile-index="${tileCount}"]`);
