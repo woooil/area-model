@@ -73,12 +73,14 @@ function setTile(tile) {
     tile.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
-function anchorTile(event){
+function anchorTile(event) {
     const changedTouch = event.changedTouches[0];
-    const elem = document.elementsFromPoint(changedTouch.pageX, changedTouch.pageY);
-    const itemTouchDown = Object.entries(elem).filter(item =>
+    const elem = Object.entries(document.elementsFromPoint(changedTouch.pageX, changedTouch.pageY));
+    const isInGrid = elem.filter(item =>
         (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
-    )[0][1];
+    );
+    if (isInGrid.length) itemTouchDown = isInGrid[0][1];
+    else return;
     const offsetX = parseInt(event.target.attributes["list-index"].value) % tileSize.width * UNIT_SIZE * PIXEL_PER_REM;
     const offsetY = parseInt(parseInt(event.target.attributes["list-index"].value) / tileSize.width) * UNIT_SIZE * PIXEL_PER_REM;
     event.target.parentElement.style.left = itemTouchDown.offsetLeft - offsetX + "px";
