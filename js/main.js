@@ -58,28 +58,46 @@ function setUnits(cont, size) {
 }
 
 /*
-function anchorTile():
-use 
+How a function anchorTile works:
+    A tile finds and remembers the coordinates on the grid under the tile unit with index of 0.
+    Whenever the size of the grid is updated, anchorTile is called.
 */
 
-function anchorTile(event) {
-    const changedTouch = event.changedTouches[0];
-    const elem = Object.entries(document.elementsFromPoint(changedTouch.clientX, changedTouch.clientY));
-    const isInGrid = elem.filter(item =>
+function isInGrid(elUnder, tile) {
+    const width = parseInt(tile.parentElement.lastChild.getAttribute("list-index")) + 1;
+    const height = parseInt(tile.parentElement.firstChild.getAttribute("list-index")) / width + 1;
+    const temp = elUnder.filter(item =>
         (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
     );
-    if (isInGrid.length) itemTouchDown = isInGrid[0][1];
-    else return;
-    const offsetX = parseInt(event.target.attributes["list-index"].value) % tileSize.width * UNIT_SIZE * PIXEL_PER_REM;
-    const offsetY = parseInt(parseInt(event.target.attributes["list-index"].value) / tileSize.width) * UNIT_SIZE * PIXEL_PER_REM;
-    event.target.parentElement.style.left = itemTouchDown.offsetLeft - offsetX + "px";
-    event.target.parentElement.style.top = itemTouchDown.offsetTop - offsetY + "px";
+    if (!temp.length) return false;
+    const gridUnitIndex = parseInt(temp[0][1].getAttribute("list-index"));
+    if (gridUnitIndex % gridSize.height + width - 1 >= gridSize.width || parseInt(gridUnitIndex / gridSize.width) + height - 1 >= gridSize.height) return false;
+    return temp[0][1];
+}
+
+function anchorTile(event) {
+    const tile = event.target;
+    const width = parseInt(tile.parentElement.lastChild.getAttribute("list-index")) + 1;
+    const height = parseInt(tile.parentElement.firstChild.getAttribute("list-index")) / width + 1;
+    const changedTouch = event.changedTouches[0];
+    const offsetX = parseInt(tile.attributes["list-index"].value) % width * UNIT_SIZE * PIXEL_PER_REM;
+    const offsetY = parseInt(parseInt(tile.attributes["list-index"].value) / width) * UNIT_SIZE * PIXEL_PER_REM;
+    const elUnder = Object.entries(document.elementsFromPoint(changedTouch.clientX - offsetX, changedTouch.clientY + offsetY));
+    const gridUnit = isInGrid(elUnder, tile);
+    if(!gridUnit) return;
+    gridUnitIndex = parseInt(gridUnit.getAttribute("list-index"));
+    tile.parentElement.setAttribute("anchor-x", gridUnitIndex % gridSize.height);
+    tile.parentElement.setAttribute("anchor-y", parseInt(gridUnitIndex / gridSize.width));
+    tile.parentElement.style.left = gridUnit.offsetLeft + "px";
+    tile.parentElement.style.top = gridUnit.offsetTop - (height - 1) * UNIT_SIZE * PIXEL_PER_REM + "px";
 }
 
 function createTile() {
     const tile = document.createElement("ul");
     tile.classList.add("tile");
     tile.setAttribute("tile-index", tileCount);
+    tile.setAttribute("anchor-x", "0");
+    tile.setAttribute("anchor-y", "0");
     setUnits(tile, tileSize);
     tile.addEventListener("touchstart", event => {
         const touchLocation = event.targetTouches[0];
