@@ -130,11 +130,13 @@ gridHeight.addEventListener("input", event => {
 tileWidth.addEventListener("input", event => {
     tileSize.width = parseInt(event.target.value);
     setUnits(document.querySelector(`ul[tile-index="${tileCount - 1}"]`), tileSize);
+    anchorTile(document.querySelector(`ul[tile-index="${tileCount - 1}"]`));
 });
 
 tileHeight.addEventListener("input", event => {
     tileSize.height = parseInt(event.target.value);
     setUnits(document.querySelector(`ul[tile-index="${tileCount - 1}"]`), tileSize);
+    anchorTile(document.querySelector(`ul[tile-index="${tileCount - 1}"]`));
 });
 
 // initiate
