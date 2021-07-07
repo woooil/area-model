@@ -64,12 +64,12 @@ How a function anchorTile works:
 
 function isInGrid(tile) {
     const halfUnitPx = 0.5 * UNIT_SIZE * PIXEL_PER_REM;;
-    const left = tile.offsetLeft
-    const top = tile.offsetTop
+    const left = tile.offsetLeft;
+    const top = tile.offsetTop;
     if (left + halfUnitPx < grid.offsetLeft || top + halfUnitPx < grid.offsetTop || left + tile.offsetWidth - halfUnitPx > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight - halfUnitPx > grid.offsetTop + grid.offsetHeight){ 
         return false;
     }
-    const gridUnitIndex = parseInt(Object.entries(document.elementsFromPoint(left + halfUnitPx, top + tile.offsetHeight - halfUnitPx)).filter(item =>
+    const gridUnitIndex = parseInt(Object.entries(document.elementsFromPoint(left + halfUnitPx - window.pageXOffset, top + tile.offsetHeight - halfUnitPx - window.pageYOffset)).filter(item =>
         (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
     )[0][1].getAttribute("list-index"));
     tile.setAttribute("anchor-x", gridUnitIndex % gridSize.width);
@@ -105,6 +105,7 @@ function createTile() {
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
     });
     tile.addEventListener("touchend", event => {
+        console.log(event);
         const tile = event.target.parentElement;
         if (isInGrid(tile)) anchorTile(tile);
         if (parseInt(tile.attributes["tile-index"].value) === tileCount - 1) createTile();
