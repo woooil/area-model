@@ -31,15 +31,13 @@ body {
     flex-direction: row;
 }
 
-.grid-with-axes {
-    display: grid;
-    grid-template-columns: 1fr 11fr;
-}
-
 .grid {
     list-style-type: none;
-    display: grid;
     border: 1px solid gray;
+}
+
+.grid-container{
+    display: grid;
 }
 
 .tile-container {
@@ -54,17 +52,23 @@ body {
     list-style-type: none;
     display: grid;
     box-shadow: 0 0 0 1px tomato;
+    width: inherit;
 }
 
 .x-axis{
     list-style-type: none;
     display: flex;
+    flex-direction: row;
 }
 
 .y-axis{
     list-style-type: none;
     display: flex;
     flex-direction: column-reverse;
+}
+
+.x-axis div, .y-axis div{
+    text-align: center;
 }
 
 .tile-size {
@@ -83,4 +87,8 @@ body {
     position: fixed;
     right: 1rem;
     bottom: 1rem;
+}
+
+.row div, .col div{
+    border: 1px solid gray;
 }
