@@ -18,7 +18,11 @@ body {
     flex-direction: column;
 }
 
-.grid-width, .grid-height, .tile-width, .tile-height {
+.grid-width,
+.grid-height,
+.tile-width,
+.tile-height,
+.unit {
     font-size: 1rem;
     text-align: center;
 }
@@ -27,36 +31,51 @@ body {
     flex-direction: row;
 }
 
-ul.grid {
+.grid-with-axes {
+    display: grid;
+    grid-template-columns: 1fr 11fr;
+}
+
+.grid {
     list-style-type: none;
     display: grid;
     border: 1px solid gray;
 }
 
 .tile-container {
-    /* background-color: green; */
     display: flex;
     justify-content: center;
     width: 100%;
     height: auto;
 }
 
-ul.tile {
+.tile {
     position: absolute;
     list-style-type: none;
     display: grid;
     box-shadow: 0 0 0 1px tomato;
 }
 
+.x-axis{
+    list-style-type: none;
+    display: flex;
+}
+
+.y-axis{
+    list-style-type: none;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
 .tile-size {
     flex-direction: row;
 }
 
-ul.grid li {
+.grid li {
     border: 1px solid gray;
 }
 
-ul.tile li {
+.tile li {
     background-color: gray;
 }
 

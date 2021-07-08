@@ -1,6 +1,9 @@
 const gridWidth = document.querySelector(".grid-width");
 const gridHeight = document.querySelector(".grid-height");
-const grid = document.querySelector(".grid");
+const gridWithAxes = document.querySelector(".grid-with-axes");
+const grid = gridWithAxes.querySelector(".grid");
+const xAxis = gridWithAxes.querySelector(".x-axis");
+const yAxis = gridWithAxes.querySelector(".y-axis");
 const tileWidth = document.querySelector(".tile-width");
 const tileHeight = document.querySelector(".tile-height");
 const tileContainer = document.querySelector(".tile-container");
@@ -37,7 +40,7 @@ function init() {
     tileHeight.value = tileSize.height;
     tileWidth.setAttribute("max", MAX_TILE_SIZE);
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
-    setUnits(grid, gridSize);
+    setGrid();
     createTile();
 }
 
@@ -47,20 +50,38 @@ function setUnits(cont, size) {
     cont.innerHTML = "";
     Array(width * height).fill().forEach((_, i) => {
         const li = document.createElement("li");
-        li.innerText = i;
-        li.setAttribute("list-index", i);
-        li.classList.add(`list${i}`);
+        // li.innerText = i;
+        li.setAttribute("unit-index", i);
+        li.classList.add("unit");
         li.style.width = li.style.height = UNIT_SIZE + "rem";
-        cont.insertBefore(li, cont.querySelector(`[list-index='${i - width - i % width}']`));
+        cont.insertBefore(li, cont.querySelector(`[unit-index='${i - width - i % width}']`));
     });
     cont.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
 }
 
-/*
-How a function anchorTile works:
-    A tile finds and remembers the coordinates on the grid under the tile unit with index of 0.
-    Whenever the size of the grid is updated, anchorTile is called.
-*/
+function setGrid(){
+    setUnits(grid, gridSize);
+    gridWithAxes.style.gridTemplateColumns = `1fr ${gridSize.width}fr`;
+    Object.values(tileContainer.children).forEach(item => anchorTile(item));
+    xAxis.innerHTML = "";
+    Array(gridSize.width).fill().forEach((_, i) => {
+        const li = document.createElement("li");
+        li.innerText = i + 1;
+        li.setAttribute("unit-index", i);
+        li.classList.add("unit");
+        li.style.width = li.style.height = UNIT_SIZE + "rem";
+        xAxis.appendChild(li);
+    });
+    yAxis.innerHTML = "";
+    Array(gridSize.height).fill().forEach((_, i) => {
+        const li = document.createElement("li");
+        li.innerText = i + 1;
+        li.setAttribute("unit-index", i);
+        li.classList.add("unit");
+        li.style.width = li.style.height = UNIT_SIZE + "rem";
+        yAxis.appendChild(li);
+    });
+}
 
 function isInGrid(tile) {
     const halfUnitPx = 0.5 * UNIT_SIZE * PIXEL_PER_REM;;
@@ -71,14 +92,14 @@ function isInGrid(tile) {
     }
     const gridUnitIndex = parseInt(Object.entries(document.elementsFromPoint(left + halfUnitPx - window.pageXOffset, top + tile.offsetHeight - halfUnitPx - window.pageYOffset)).filter(item =>
         (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
-    )[0][1].getAttribute("list-index"));
+    )[0][1].getAttribute("unit-index"));
     tile.setAttribute("anchor-x", gridUnitIndex % gridSize.width);
     tile.setAttribute("anchor-y", parseInt(gridUnitIndex / gridSize.width));
     return true;
 }
 
 function anchorTile(tile) {
-    const gridUnit = grid.querySelector(`[list-index="${parseInt(tile.getAttribute("anchor-x")) + parseInt(tile.getAttribute("anchor-y")) * gridSize.width}"]`);
+    const gridUnit = grid.querySelector(`[unit-index="${parseInt(tile.getAttribute("anchor-x")) + parseInt(tile.getAttribute("anchor-y")) * gridSize.width}"]`);
     tile.style.left = gridUnit.offsetLeft + "px";
     tile.style.top = gridUnit.offsetTop - tile.offsetHeight + UNIT_SIZE * PIXEL_PER_REM + "px";
 }
@@ -105,9 +126,9 @@ function createTile() {
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
     });
     tile.addEventListener("touchend", event => {
-        console.log(event);
         const tile = event.target.parentElement;
         if (isInGrid(tile)) anchorTile(tile);
+        else tile.remove();
         if (parseInt(tile.attributes["tile-index"].value) === tileCount - 1) createTile();
     });
     tileCount++;
@@ -117,14 +138,12 @@ function createTile() {
 
 gridWidth.addEventListener("input", event => {
     gridSize.width = parseInt(event.target.value);
-    setUnits(grid, gridSize);
-    Object.values(tileContainer.children).forEach(item => anchorTile(item));
+    setGrid();
 });
 
 gridHeight.addEventListener("input", event => {
     gridSize.height = parseInt(event.target.value);
-    setUnits(grid, gridSize);
-    Object.values(tileContainer.children).forEach(item => anchorTile(item));
+    setGrid();
 });
 
 tileWidth.addEventListener("input", event => {
