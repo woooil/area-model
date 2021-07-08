@@ -13,15 +13,16 @@ const MAX_GRID_SIZE = 100;
 const MAX_TILE_SIZE = 10;
 const UNIT_SIZE = 1.5;
 const PIXEL_PER_REM = parseFloat(getComputedStyle(document.documentElement).fontSize);
+const HALF_UNIT_IN_PX = 0.5 * UNIT_SIZE * PIXEL_PER_REM;
 
-const gridSize = {
-    width: 11,
-    height: 7,
-};
-const tileSize = {
-    width: 2,
-    height: 3,
-};
+class Size {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+    }
+}
+const gridSize = new Size(11, 7);
+const tileSize = new Size(2, 3);
 const tileOffset = {
     x: 0,
     y: 0,
@@ -63,39 +64,31 @@ function setGrid(){
     setUnits(grid, gridSize);
     gridWithAxes.style.gridTemplateColumns = `1fr ${gridSize.width}fr`;
     Object.values(tileContainer.children).forEach(item => anchorTile(item));
-    xAxis.innerHTML = "";
-    Array(gridSize.width).fill().forEach((_, i) => {
-        const li = document.createElement("li");
-        li.innerText = i + 1;
-        li.setAttribute("unit-index", i);
-        li.classList.add("unit");
-        li.style.width = li.style.height = UNIT_SIZE + "rem";
-        xAxis.appendChild(li);
-    });
-    yAxis.innerHTML = "";
-    Array(gridSize.height).fill().forEach((_, i) => {
-        const li = document.createElement("li");
-        li.innerText = i + 1;
-        li.setAttribute("unit-index", i);
-        li.classList.add("unit");
-        li.style.width = li.style.height = UNIT_SIZE + "rem";
-        yAxis.appendChild(li);
-    });
+    [{axis: xAxis, length: gridSize.width}, {axis: yAxis, length: gridSize.height}].forEach(item => {
+        item.axis.innerHTML = "";
+        Array(item.length).fill().forEach((_, i) => {
+            const li = document.createElement("li");
+            li.innerText = i + 1;
+            li.setAttribute("unit-index", i);
+            li.classList.add("unit");
+            li.style.width = li.style.height = UNIT_SIZE + "rem";
+            item.axis.appendChild(li);
+        });
+    })
 }
 
 function isInGrid(tile) {
-    const halfUnitPx = 0.5 * UNIT_SIZE * PIXEL_PER_REM;;
     const left = tile.offsetLeft;
     const top = tile.offsetTop;
-    if (left + halfUnitPx < grid.offsetLeft || top + halfUnitPx < grid.offsetTop || left + tile.offsetWidth - halfUnitPx > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight - halfUnitPx > grid.offsetTop + grid.offsetHeight){ 
-        return false;
-    }
-    const gridUnitIndex = parseInt(Object.entries(document.elementsFromPoint(left + halfUnitPx - window.pageXOffset, top + tile.offsetHeight - halfUnitPx - window.pageYOffset)).filter(item =>
+    return !(left + HALF_UNIT_IN_PX < grid.offsetLeft || top + HALF_UNIT_IN_PX < grid.offsetTop || left + tile.offsetWidth - HALF_UNIT_IN_PX > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight - HALF_UNIT_IN_PX > grid.offsetTop + grid.offsetHeight);
+}
+
+function giveCoords(tile) {
+    const gridUnitIndex = parseInt(Object.entries(document.elementsFromPoint(tile.offsetLeft + HALF_UNIT_IN_PX - window.pageXOffset, tile.offsetTop + tile.offsetHeight - HALF_UNIT_IN_PX - window.pageYOffset)).filter(item =>
         (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
     )[0][1].getAttribute("unit-index"));
     tile.setAttribute("anchor-x", gridUnitIndex % gridSize.width);
     tile.setAttribute("anchor-y", parseInt(gridUnitIndex / gridSize.width));
-    return true;
 }
 
 function anchorTile(tile) {
@@ -127,7 +120,10 @@ function createTile() {
     });
     tile.addEventListener("touchend", event => {
         const tile = event.target.parentElement;
-        if (isInGrid(tile)) anchorTile(tile);
+        if (isInGrid(tile)){
+            giveCoords(tile);
+            anchorTile(tile);
+        }
         else tile.remove();
         if (parseInt(tile.attributes["tile-index"].value) === tileCount - 1) createTile();
     });
