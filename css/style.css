@@ -27,13 +27,16 @@ body {
     text-align: center;
 }
 
+
+.grid, .tile{
+    border: 1px solid gray;
+}
 .grid-size {
     flex-direction: row;
 }
 
 .grid {
     list-style-type: none;
-    border: 1px solid gray;
 }
 
 .grid-container{
@@ -51,7 +54,7 @@ body {
     position: absolute;
     list-style-type: none;
     display: grid;
-    box-shadow: 0 0 0 1px tomato;
+    background-color: tomato;
     width: inherit;
 }
 

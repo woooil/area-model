@@ -13,6 +13,7 @@ const MAX_GRID_SIZE = 100;
 const MAX_TILE_SIZE = 10;
 const UNIT_SIZE = 1.5;
 const PIXEL_PER_REM = parseFloat(getComputedStyle(document.documentElement).fontSize);
+const UNIT_IN_PX = UNIT_SIZE * PIXEL_PER_REM;
 const HALF_UNIT_IN_PX = 0.5 * UNIT_SIZE * PIXEL_PER_REM;
 
 class Size {
@@ -51,15 +52,15 @@ function setUnits(cont, size) {
     cont.innerHTML = "";
     cont.style.width = `${width * UNIT_SIZE}rem`;
     cont.style.height = `${height * UNIT_SIZE}rem`;
-    cont.appendChild(document.createElement("div"));
-    cont.appendChild(document.createElement("div"));
+    cont.append(document.createElement("div"));
+    cont.append(document.createElement("div"));
     [{line: cont.firstChild, repeat: height}, {line: cont.lastChild, repeat: width}].forEach((item, idx) => {
         item.line.classList.add(`${idx ? "col" : "row"}`);
         for(let i = 0; i < item.repeat; i++){
             const div = document.createElement("div");
             div.setAttribute("index", i);
-            div.innerText = i;
-            item.line.appendChild(div);
+            // div.innerText = i;
+            idx ? item.line.append(div) : item.line.prepend(div);
         }
         item.line.style.position = "absolute";
         item.line.style.width = `${width * UNIT_SIZE}rem`;
@@ -67,22 +68,22 @@ function setUnits(cont, size) {
         item.line.style.display = "grid";
         if (idx) item.line.style.gridTemplateColumns = `repeat(${item.repeat}, 1fr)`;
         else item.line.style.gridTemplateRows = `repeat(${item.repeat}, 1fr)`;
-        cont.appendChild(item.line);
+        cont.append(item.line);
     })
 }
 
 function setGrid(){
     setUnits(grid, gridSize);
     gridContainer.style.gridTemplateColumns = `1fr ${gridSize.width}fr`;
-    // Object.values(tileContainer.children).forEach(item => anchorTile(item));
+    Object.values(tileContainer.children).forEach(item => anchorTile(item));
     [{axis: xAxis, repeat: gridSize.width}, {axis: yAxis, repeat: gridSize.height}].forEach((item, idx) => {
         item.axis.innerHTML = "";
         for(let i = 0; i < item.repeat; i++){
             const div = document.createElement("div");
             div.setAttribute("index", i);
-            div.innerText = i + 1;
+            div.innerText = i;
             div.style.width = div.style.height = UNIT_SIZE + "rem";
-            item.axis.appendChild(div);
+            item.axis.append(div);
         };
     });
 }
@@ -94,17 +95,17 @@ function isInGrid(tile) {
 }
 
 function giveCoords(tile) {
-    const gridUnitIndex = parseInt(Object.entries(document.elementsFromPoint(tile.offsetLeft + HALF_UNIT_IN_PX - window.pageXOffset, tile.offsetTop + tile.offsetHeight - HALF_UNIT_IN_PX - window.pageYOffset)).filter(item =>
-        (item[1].parentElement && item[1].parentElement.classList.contains("grid"))
-    )[0][1].getAttribute("unit-index"));
-    tile.setAttribute("anchor-x", gridUnitIndex % gridSize.width);
-    tile.setAttribute("anchor-y", parseInt(gridUnitIndex / gridSize.width));
+    const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
+    const x = Math.round((tile.offsetLeft - grid.offsetLeft) / UNIT_IN_PX);
+    const y = gridSize.height - Math.round((tile.offsetTop - grid.offsetTop) / UNIT_IN_PX) - tileHeight;
+    tile.setAttribute("anchor-x", x);
+    tile.setAttribute("anchor-y", y);
 }
 
 function anchorTile(tile) {
-    const gridUnit = grid.querySelector(`[unit-index="${parseInt(tile.getAttribute("anchor-x")) + parseInt(tile.getAttribute("anchor-y")) * gridSize.width}"]`);
-    tile.style.left = gridUnit.offsetLeft + "px";
-    tile.style.top = gridUnit.offsetTop - tile.offsetHeight + UNIT_SIZE * PIXEL_PER_REM + "px";
+    const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
+    tile.style.left = grid.offsetLeft + parseInt(tile.getAttribute("anchor-x")) * UNIT_IN_PX + "px";
+    tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y")) - tileHeight) * UNIT_IN_PX + "px";
 }
 
 function createTile() {
@@ -114,8 +115,8 @@ function createTile() {
     tile.setAttribute("anchor-x", 0);
     tile.setAttribute("anchor-y", 0);
     setUnits(tile, tileSize);
-    tileContainer.appendChild(tile);
-    // anchorTile(tile);
+    tileContainer.append(tile);
+    anchorTile(tile);
     tile.addEventListener("touchstart", event => {
         const touchLocation = event.targetTouches[0];
         tileOffset.x = touchLocation.pageX - tile.offsetLeft;
@@ -153,15 +154,17 @@ gridHeight.addEventListener("input", event => {
 });
 
 tileWidth.addEventListener("input", event => {
+    const newTile = document.querySelector(`div[tile-index="${tileCount - 1}"]`);
     tileSize.width = parseInt(event.target.value);
-    setUnits(document.querySelector(`ul[tile-index="${tileCount - 1}"]`), tileSize);
-    anchorTile(document.querySelector(`ul[tile-index="${tileCount - 1}"]`));
+    setUnits(newTile, tileSize);
+    anchorTile(newTile);
 });
 
 tileHeight.addEventListener("input", event => {
+    const newTile = document.querySelector(`div[tile-index="${tileCount - 1}"]`);
     tileSize.height = parseInt(event.target.value);
-    setUnits(document.querySelector(`ul[tile-index="${tileCount - 1}"]`), tileSize);
-    anchorTile(document.querySelector(`ul[tile-index="${tileCount - 1}"]`));
+    setUnits(newTile, tileSize);
+    anchorTile(newTile);
 });
 
 // initiate
