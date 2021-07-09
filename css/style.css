@@ -11,7 +11,7 @@ body {
     overflow: hidden;
 }
 
-.wrap-all {
+.wrap-all, .settings {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -27,6 +27,9 @@ body {
     text-align: center;
 }
 
+.row div, .col div{
+    border: 1px solid gray;
+}
 
 .grid, .tile{
     border: 1px solid gray;
@@ -90,8 +93,4 @@ body {
     position: fixed;
     right: 1rem;
     bottom: 1rem;
-}
-
-.row div, .col div{
-    border: 1px solid gray;
 }

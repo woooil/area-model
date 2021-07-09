@@ -9,17 +9,23 @@
     <div class="wrap-all">
         <div id="test-field"></div>
         <h1>Areal Model</h1>
-        <div class="grid-size">
-            <span>grid size: </span>
-            <input type="number" pattern="\d*" min="1" class="grid-width" placeholder="x">
-            <span>x</span>
-            <input type="number" pattern="\d*" min="1" class="grid-height" placeholder="y">
-        </div>
-        <div class="tile-size">
-            <span>tile size: </span>
-            <input type="number" pattern="\d*" min="1" class="tile-width" placeholder="x">
-            <span>x</span>
-            <input type="number" pattern="\d*" min="1" class="tile-height" placeholder="y">
+        <div class="settings">
+            <div class="grid-size">
+                <span>Grid size: </span>
+                <input type="number" pattern="\d*" min="1" class="grid-width" placeholder="x">
+                <span>x</span>
+                <input type="number" pattern="\d*" min="1" class="grid-height" placeholder="y">
+            </div>
+            <div class="tile-size">
+                <span>Tile size: </span>
+                <input type="number" pattern="\d*" min="1" class="tile-width" placeholder="x">
+                <span>x</span>
+                <input type="number" pattern="\d*" min="1" class="tile-height" placeholder="y">
+            </div>
+            <div class="gird-on-box">
+                <input type="checkbox" class="grid-on" checked>
+                <span>Grid</span>
+            </div>
         </div>
         <div class="grid-container">
             <div class="y-axis"></div>

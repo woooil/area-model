@@ -7,6 +7,7 @@ const yAxis = gridContainer.querySelector(".y-axis");
 const tileWidth = document.querySelector(".tile-width");
 const tileHeight = document.querySelector(".tile-height");
 const tileContainer = document.querySelector(".tile-container");
+const gridOn = document.querySelector(".grid-on");
 const testField = document.querySelector("#test-field");
 
 const MAX_GRID_SIZE = 100;
@@ -30,6 +31,7 @@ const tileOffset = {
 };
 
 let tileCount = 0;
+let isGridOn = gridOn.checked;
 
 // functions
 
@@ -56,8 +58,10 @@ function setUnits(cont, size) {
     cont.append(document.createElement("div"));
     [{line: cont.firstChild, repeat: height}, {line: cont.lastChild, repeat: width}].forEach((item, idx) => {
         item.line.classList.add(`${idx ? "col" : "row"}`);
+        item.line.style.pointerEvents = "none";
         for(let i = 0; i < item.repeat; i++){
             const div = document.createElement("div");
+            div.style.pointerEvents = "none";
             div.setAttribute("index", i);
             // div.innerText = i;
             idx ? item.line.append(div) : item.line.prepend(div);
@@ -124,13 +128,14 @@ function createTile() {
     });
     tile.addEventListener("touchmove", event => {
         event.preventDefault();
-        const tile = event.target.parentElement.parentElement;
+        const tile = event.target;
         const touchLocation = event.targetTouches[0];
         tile.style.left = (touchLocation.pageX - tileOffset.x) + 'px';
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
     });
     tile.addEventListener("touchend", event => {
-        const tile = event.target.parentElement.parentElement;
+        console.log(event);
+        const tile = event.target;
         if (isInGrid(tile)){
             giveCoords(tile);
             anchorTile(tile);
@@ -166,6 +171,13 @@ tileHeight.addEventListener("input", event => {
     setUnits(newTile, tileSize);
     anchorTile(newTile);
 });
+
+const gridOnStyle = document.createElement("style");
+document.head.append(gridOnStyle);
+gridOn.addEventListener("click", event => {
+    isGridOn = gridOn.checked;
+    gridOnStyle.innerHTML = `.row, .col {visibility: ${isGridOn ? "visible" : "hidden"}}`;
+})
 
 // initiate
 
