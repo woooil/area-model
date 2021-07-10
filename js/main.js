@@ -112,7 +112,7 @@ function isInGrid(tile) {
     const left = tile.offsetLeft;
     const top = tile.offsetTop;
     if (isMagnetMode) {
-        return !(left + tile.offsetWidth < grid.offsetLeft || top + tile.offsetHeight < grid.offsetTop || left > grid.offsetLeft + grid.offsetWidth || top > grid.offsetTop + grid.offsetHeight);
+        return !(left + tile.offsetWidth / 2 < grid.offsetLeft || top + tile.offsetHeight / 2 < grid.offsetTop || left + tile.offsetWidth / 2 > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight / 2 > grid.offsetTop + grid.offsetHeight);
     } else {
         return !(left + HALF_UNIT_IN_PX < grid.offsetLeft || top + HALF_UNIT_IN_PX < grid.offsetTop || left + tile.offsetWidth - HALF_UNIT_IN_PX > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight - HALF_UNIT_IN_PX > grid.offsetTop + grid.offsetHeight);
     }
@@ -153,7 +153,7 @@ function giveCoords(tile, targetTile) {
                     loop = y;
                     break;
             }
-            for (let i = 0; i <= loop; i++) {
+            for (let i = 1; i <= loop; i++) {
                 const temp = Object.values(document.elementsFromPoint(tile.offsetLeft + tile.offsetWidth / 2 - window.pageXOffset + item.dir[0] * i * UNIT_IN_PX, tile.offsetTop + tile.offsetHeight / 2 - window.pageYOffset + item.dir[1] * i * UNIT_IN_PX)).filter(item2 =>
                     item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
                 if (temp.length !== 0) {
@@ -181,15 +181,17 @@ function giveCoords(tile, targetTile) {
         directions.forEach((item, idx) => {
             if (item.dis !== null && (nearIdx === null || directions[nearIdx].dis > item.dis)) nearIdx = idx;
         })
-        if (nearIdx === null) return;
+        if (nearIdx === null) return false;
         const nearTile = directions[nearIdx].tile;
         const nearX = parseInt(nearTile.getAttribute("anchor-x"));
         const nearY = parseInt(nearTile.getAttribute("anchor-y"));
         targetTile.setAttribute("anchor-x", nearX - directions[nearIdx].dir[0] * nearTile.offsetWidth / UNIT_IN_PX);
         targetTile.setAttribute("anchor-y", nearY + directions[nearIdx].dir[1] * nearTile.offsetHeight / UNIT_IN_PX);
+        return true;
     } else {
         targetTile.setAttribute("anchor-x", x);
         targetTile.setAttribute("anchor-y", y);
+        return true;
     }
 }
 
@@ -197,6 +199,7 @@ function anchorTile(tile) {
     const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
     tile.style.left = grid.offsetLeft + parseInt(tile.getAttribute("anchor-x")) * UNIT_IN_PX + "px";
     tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y")) - tileHeight) * UNIT_IN_PX + "px";
+    return true;
 }
 
 function createTile(isGhost) {
@@ -226,17 +229,16 @@ function createTile(isGhost) {
         tile.style.left = (touchLocation.pageX - tileOffset.x) + 'px';
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
         const ghostTile = document.querySelector(".ghost-tile");
-        if (isInGrid(tile)){
+        if (isInGrid(tile) && giveCoords(tile, ghostTile) && anchorTile(ghostTile) && isInGrid(ghostTile)){
             ghostTile.style.visibility = "visible";
-            giveCoords(tile, ghostTile);
-            anchorTile(ghostTile);
         } else {
             ghostTile.style.visibility = "hidden";
         }
     });
     tile.addEventListener("touchend", event => {
         const tile = event.target;
-        if (isInGrid(tile)) {
+        const ghostTile = document.querySelector(".ghost-tile");
+        if (isInGrid(tile) && isInGrid(ghostTile)) {
             giveCoords(tile);
             anchorTile(tile);
         } else tile.remove();
