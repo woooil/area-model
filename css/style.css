@@ -3,6 +3,8 @@
     border: 0;
     margin: 0;
     box-sizing: border-box;
+    text-align: center;
+    font-size: 1.5rem;
 }
 
 html,
@@ -17,15 +19,6 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
-}
-
-.grid-width,
-.grid-height,
-.tile-width,
-.tile-height,
-.unit {
-    font-size: 1rem;
-    text-align: center;
 }
 
 .row div,

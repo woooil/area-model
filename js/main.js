@@ -13,7 +13,7 @@ const testField = document.querySelector("#test-field");
 
 const MAX_GRID_SIZE = 100;
 const MAX_TILE_SIZE = 10;
-const UNIT_SIZE = 1.5;
+const UNIT_SIZE = 2;
 const PIXEL_PER_REM = parseFloat(getComputedStyle(document.documentElement).fontSize);
 const UNIT_IN_PX = UNIT_SIZE * PIXEL_PER_REM;
 const HALF_UNIT_IN_PX = 0.5 * UNIT_SIZE * PIXEL_PER_REM;
@@ -47,17 +47,19 @@ function init() {
     tileWidth.setAttribute("max", MAX_TILE_SIZE);
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
     setGrid();
-    createTile(true);
+    setGridMode();
+    createTile(isGhost = true);
     createTile();
     createTile();
 }
 
-function setUnits(cont, size) {
+function setUnits(cont, size, isGhost) {
     const width = size.width;
     const height = size.height;
     cont.innerHTML = "";
     cont.style.width = `${width * UNIT_SIZE}rem`;
     cont.style.height = `${height * UNIT_SIZE}rem`;
+    if (isGhost) return;
     cont.append(document.createElement("div"));
     cont.append(document.createElement("div"));
     [{
@@ -101,7 +103,7 @@ function setGrid() {
         for (let i = 0; i < item.repeat; i++) {
             const div = document.createElement("div");
             div.setAttribute("index", i);
-            div.innerText = i;
+            div.innerText = i + 1;
             div.style.width = div.style.height = UNIT_SIZE + "rem";
             item.axis.append(div);
         };
@@ -196,9 +198,8 @@ function giveCoords(tile, targetTile) {
 }
 
 function anchorTile(tile) {
-    const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
     tile.style.left = grid.offsetLeft + parseInt(tile.getAttribute("anchor-x")) * UNIT_IN_PX + "px";
-    tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y")) - tileHeight) * UNIT_IN_PX + "px";
+    tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y"))) * UNIT_IN_PX - tile.offsetHeight + "px";
     return true;
 }
 
@@ -213,14 +214,17 @@ function createTile(isGhost) {
     }
     tile.setAttribute("anchor-x", 0);
     tile.setAttribute("anchor-y", 0);
-    setUnits(tile, tileSize);
+    setUnits(tile, tileSize, isGhost);
     tileContainer.append(tile);
     anchorTile(tile);
     if (isGhost) return;
     tile.addEventListener("touchstart", event => {
+        const tile = event.target;
         const touchLocation = event.targetTouches[0];
         tileOffset.x = touchLocation.pageX - tile.offsetLeft;
         tileOffset.y = touchLocation.pageY - tile.offsetTop;
+        const ghostTileSize = new Size(tile.offsetWidth / UNIT_IN_PX, tile.offsetHeight / UNIT_IN_PX);
+        setUnits(ghostTile, ghostTileSize, true);
     });
     tile.addEventListener("touchmove", event => {
         event.preventDefault();
@@ -228,8 +232,7 @@ function createTile(isGhost) {
         const touchLocation = event.targetTouches[0];
         tile.style.left = (touchLocation.pageX - tileOffset.x) + 'px';
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
-        const ghostTile = document.querySelector(".ghost-tile");
-        if (isInGrid(tile) && giveCoords(tile, ghostTile) && anchorTile(ghostTile) && isInGrid(ghostTile)){
+        if (isInGrid(tile) && giveCoords(tile, ghostTile) && anchorTile(ghostTile) && isInGrid(ghostTile)) {
             ghostTile.style.visibility = "visible";
         } else {
             ghostTile.style.visibility = "hidden";
@@ -237,54 +240,67 @@ function createTile(isGhost) {
     });
     tile.addEventListener("touchend", event => {
         const tile = event.target;
-        const ghostTile = document.querySelector(".ghost-tile");
         if (isInGrid(tile) && isInGrid(ghostTile)) {
             giveCoords(tile);
             anchorTile(tile);
         } else tile.remove();
         if (parseInt(tile.attributes["tile-index"].value) === tileCount - 1) createTile();
-        document.querySelector(".ghost-tile").style.visibility = "hidden";
+        ghostTile.style.visibility = "hidden";
     });
     tileCount++;
+}
+
+function setGridMode() {
+    isGridMode = gridMode.checked;
+    gridModeStyle.innerHTML = `.row, .col {visibility: ${isGridMode ? "visible" : "hidden"}}`;
 }
 
 // events
 
 gridWidth.addEventListener("input", event => {
-    gridSize.width = parseInt(event.target.value);
+    const value = event.target.value;
+    if (!value) return;
+    gridSize.width = parseInt(value);
     setGrid();
 });
 
 gridHeight.addEventListener("input", event => {
-    gridSize.height = parseInt(event.target.value);
+    const value = event.target.value;
+    if (!value) return;
+    gridSize.height = parseInt(value);
     setGrid();
 });
 
 tileWidth.addEventListener("input", event => {
-    const newTile = document.querySelector(`div[tile-index="${tileCount - 1}"]`);
-    tileSize.width = parseInt(event.target.value);
+    const value = event.target.value;
+    if (!value) return;
+    const newTile = tileContainer.querySelector(`[tile-index="${tileCount - 1}"]`);
+    tileSize.width = parseInt(value);
     setUnits(newTile, tileSize);
     anchorTile(newTile);
+    setUnits(originTile, tileSize);
+    anchorTile(originTile);
 });
 
 tileHeight.addEventListener("input", event => {
-    const newTile = document.querySelector(`div[tile-index="${tileCount - 1}"]`);
-    tileSize.height = parseInt(event.target.value);
+    const value = event.target.value;
+    if (!value) return;
+    const newTile = tileContainer.querySelector(`[tile-index="${tileCount - 1}"]`);
+    tileSize.height = parseInt(value);
     setUnits(newTile, tileSize);
     anchorTile(newTile);
+    setUnits(originTile, tileSize);
+    anchorTile(originTile);
 });
 
 const gridModeStyle = document.createElement("style");
 document.head.append(gridModeStyle);
-gridMode.addEventListener("click", event => {
-    isGridMode = gridMode.checked;
-    gridModeStyle.innerHTML = `.row, .col {visibility: ${isGridMode ? "visible" : "hidden"}}`;
-});
+gridMode.addEventListener("click", setGridMode);
 
-magnetMode.addEventListener("click", event => {
-    isMagnetMode = magnetMode.checked;
-});
+magnetMode.addEventListener("click", event => isMagnetMode = magnetMode.checked);
 
 // initiate
 
 init();
+const ghostTile = tileContainer.querySelector(".ghost-tile");
+const originTile = tileContainer.querySelector('[tile-index="0"]');
