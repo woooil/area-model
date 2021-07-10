@@ -48,6 +48,7 @@ function init() {
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
     setGrid();
     createTile();
+    createTile();
 }
 
 function setUnits(cont, size) {
@@ -116,7 +117,8 @@ function isInGrid(tile) {
     }
 }
 
-function giveCoords(tile) {
+function giveCoords(tile, targetTile) {
+    if(!targetTile) targetTile = tile;
     const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
     const x = Math.round((tile.offsetLeft - grid.offsetLeft) / UNIT_IN_PX);
     const y = gridSize.height - Math.round((tile.offsetTop - grid.offsetTop) / UNIT_IN_PX) - tileHeight;
@@ -134,62 +136,43 @@ function giveCoords(tile) {
             new Direction([+1, 0], null, null), // right
             new Direction([0, +1], null, null), // bottom
         ];
-        const left = tile.offsetLeft + tile.offsetWidth / 2;
-        const top = tile.offsetTop + tile.offsetHeight / 2;
-        const width = tile.offsetWidth * UNIT_IN_PX;
-        const height = tile.offsetHeight * UNIT_IN_PX;
         directions.forEach((item, idx) => {
+            let temp, loop, dis;
             switch (idx) {
-                case (0):
-                    for (let i = 0; i <= x; i++) {
-                        const temp = Object.values(document.elementsFromPoint(left - window.pageXOffset - i * UNIT_IN_PX, top - window.pageYOffset)).filter(item2 =>
-                            item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
-                        if (temp.length !== 0) {
-                            item.dis = tile.offsetLeft - temp[0].offsetLeft + temp[0].offsetWidth;
-                            item.tile = temp[0];
-                            break;
-                        }
-                    }
-                    break;
-                case (1):
-                    for (let i = 0; i <= gridSize.height - y; i++) {
-                        const temp = Object.values(document.elementsFromPoint(left - window.pageXOffset, top - window.pageYOffset - i * UNIT_IN_PX)).filter(item2 =>
-                            item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
-                        if (temp.length !== 0) {
-                            item.dis = tile.offsetTop - temp[0].offsetTop - temp[0].offsetHeight;
-                            item.tile = temp[0];
-                            break;
-                        }
-                    }
-                    break;
-                case (2):
-                    for (let i = 0; i <= gridSize.width - x; i++) {
-                        const temp = Object.values(document.elementsFromPoint(left - window.pageXOffset + i * UNIT_IN_PX, top - window.pageYOffset)).filter(item2 =>
-                            item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
-                        if (temp.length !== 0) {
-                            item.dis = temp[0].offsetLeft - tile.offsetLeft - tile.offsetWidth;
-                            item.tile = temp[0];
-                            break;
-                        }
-                    }
-                    break;
-                case (3):
-                    for (let i = 0; i <= y; i++) {
-                        const temp = Object.values(document.elementsFromPoint(left - window.pageXOffset, top - window.pageYOffset + i * UNIT_IN_PX)).filter(item2 =>
-                            item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
-                        if (temp.length !== 0) {
-                            item.dis = temp[0].offsetTop - tile.offsetTop - tile.offsetHeight;
-                            item.tile = temp[0];
-                            break;
-                        }
-                    }
-                    break;
+                case (0): loop = x; break;
+                case (1): loop = gridSize.height - y; break;
+                case (2): loop = gridSize.width - x; break;
+                case (3): loop = y; break;
             }
-            console.log(directions);
+            for (let i = 0; i <= loop; i++) {
+                const temp = Object.values(document.elementsFromPoint(tile.offsetLeft + tile.offsetWidth / 2 - window.pageXOffset + item.dir[0] * i * UNIT_IN_PX, tile.offsetTop + tile.offsetHeight / 2 - window.pageYOffset + item.dir[1] * i * UNIT_IN_PX)).filter(item2 =>
+                    item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
+                if (temp.length !== 0) {
+                    switch (idx) {
+                        case (0): dis = tile.offsetLeft - temp[0].offsetLeft - temp[0].offsetWidth; break;
+                        case (1): dis = tile.offsetTop - temp[0].offsetTop - temp[0].offsetHeight; break;
+                        case (2): dis = temp[0].offsetLeft - tile.offsetLeft - tile.offsetWidth; break;
+                        case (3): dis = temp[0].offsetTop - tile.offsetTop - tile.offsetHeight; break;
+                    }
+                    item.dis = dis;
+                    item.tile = temp[0];
+                    break;
+                }
+            }
+        });
+        let nearIdx = null;
+        directions.forEach((item, idx) => {
+            if(item.dis !== null && (nearIdx === null || directions[nearIdx].dis > item.dis)) nearIdx = idx;
         })
+        if(nearIdx === null) return;
+        const nearTile = directions[nearIdx].tile;
+        const nearX = parseInt(nearTile.getAttribute("anchor-x"));
+        const nearY = parseInt(nearTile.getAttribute("anchor-y"));
+        targetTile.setAttribute("anchor-x", nearX - directions[nearIdx].dir[0] * nearTile.offsetWidth / UNIT_IN_PX);
+        targetTile.setAttribute("anchor-y", nearY + directions[nearIdx].dir[1] * nearTile.offsetHeight / UNIT_IN_PX);
     } else {
-        tile.setAttribute("anchor-x", x);
-        tile.setAttribute("anchor-y", y);
+        targetTile.setAttribute("anchor-x", x);
+        targetTile.setAttribute("anchor-y", y);
     }
 }
 
@@ -199,7 +182,7 @@ function anchorTile(tile) {
     tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y")) - tileHeight) * UNIT_IN_PX + "px";
 }
 
-function createTile() {
+function createTile(isGhost) {
     const tile = document.createElement("div");
     tile.classList.add("tile");
     tile.setAttribute("tile-index", tileCount);

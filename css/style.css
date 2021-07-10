@@ -11,7 +11,8 @@ body {
     overflow: hidden;
 }
 
-.wrap-all, .settings {
+.wrap-all,
+.settings {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -27,13 +28,16 @@ body {
     text-align: center;
 }
 
-.row div, .col div{
+.row div,
+.col div {
     border: 1px solid gray;
 }
 
-.grid, .tile{
+.grid,
+.tile {
     border: 1px solid gray;
 }
+
 .grid-size {
     flex-direction: row;
 }
@@ -42,7 +46,7 @@ body {
     list-style-type: none;
 }
 
-.grid-container{
+.grid-container {
     display: grid;
 }
 
@@ -61,19 +65,20 @@ body {
     width: inherit;
 }
 
-.x-axis{
+.x-axis {
     list-style-type: none;
     display: flex;
     flex-direction: row;
 }
 
-.y-axis{
+.y-axis {
     list-style-type: none;
     display: flex;
     flex-direction: column-reverse;
 }
 
-.x-axis div, .y-axis div{
+.x-axis div,
+.y-axis div {
     text-align: center;
 }
 
@@ -81,12 +86,8 @@ body {
     flex-direction: row;
 }
 
-.grid li {
-    border: 1px solid gray;
-}
-
-.tile li {
-    background-color: gray;
+.tile[tile-index="0"] {
+    background-color: transparent;
 }
 
 .about {
