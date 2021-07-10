@@ -65,6 +65,13 @@ body {
     width: inherit;
 }
 
+.ghost-tile {
+    position: absolute;
+    list-style-type: none;
+    display: grid;
+    background-color: lightsteelblue;
+}
+
 .x-axis {
     list-style-type: none;
     display: flex;

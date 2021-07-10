@@ -47,6 +47,7 @@ function init() {
     tileWidth.setAttribute("max", MAX_TILE_SIZE);
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
     setGrid();
+    createTile(true);
     createTile();
     createTile();
 }
@@ -118,7 +119,7 @@ function isInGrid(tile) {
 }
 
 function giveCoords(tile, targetTile) {
-    if(!targetTile) targetTile = tile;
+    if (!targetTile) targetTile = tile;
     const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
     const x = Math.round((tile.offsetLeft - grid.offsetLeft) / UNIT_IN_PX);
     const y = gridSize.height - Math.round((tile.offsetTop - grid.offsetTop) / UNIT_IN_PX) - tileHeight;
@@ -139,20 +140,36 @@ function giveCoords(tile, targetTile) {
         directions.forEach((item, idx) => {
             let temp, loop, dis;
             switch (idx) {
-                case (0): loop = x; break;
-                case (1): loop = gridSize.height - y; break;
-                case (2): loop = gridSize.width - x; break;
-                case (3): loop = y; break;
+                case (0):
+                    loop = x;
+                    break;
+                case (1):
+                    loop = gridSize.height - y;
+                    break;
+                case (2):
+                    loop = gridSize.width - x;
+                    break;
+                case (3):
+                    loop = y;
+                    break;
             }
             for (let i = 0; i <= loop; i++) {
                 const temp = Object.values(document.elementsFromPoint(tile.offsetLeft + tile.offsetWidth / 2 - window.pageXOffset + item.dir[0] * i * UNIT_IN_PX, tile.offsetTop + tile.offsetHeight / 2 - window.pageYOffset + item.dir[1] * i * UNIT_IN_PX)).filter(item2 =>
                     item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
                 if (temp.length !== 0) {
                     switch (idx) {
-                        case (0): dis = tile.offsetLeft - temp[0].offsetLeft - temp[0].offsetWidth; break;
-                        case (1): dis = tile.offsetTop - temp[0].offsetTop - temp[0].offsetHeight; break;
-                        case (2): dis = temp[0].offsetLeft - tile.offsetLeft - tile.offsetWidth; break;
-                        case (3): dis = temp[0].offsetTop - tile.offsetTop - tile.offsetHeight; break;
+                        case (0):
+                            dis = tile.offsetLeft - temp[0].offsetLeft - temp[0].offsetWidth;
+                            break;
+                        case (1):
+                            dis = tile.offsetTop - temp[0].offsetTop - temp[0].offsetHeight;
+                            break;
+                        case (2):
+                            dis = temp[0].offsetLeft - tile.offsetLeft - tile.offsetWidth;
+                            break;
+                        case (3):
+                            dis = temp[0].offsetTop - tile.offsetTop - tile.offsetHeight;
+                            break;
                     }
                     item.dis = dis;
                     item.tile = temp[0];
@@ -162,9 +179,9 @@ function giveCoords(tile, targetTile) {
         });
         let nearIdx = null;
         directions.forEach((item, idx) => {
-            if(item.dis !== null && (nearIdx === null || directions[nearIdx].dis > item.dis)) nearIdx = idx;
+            if (item.dis !== null && (nearIdx === null || directions[nearIdx].dis > item.dis)) nearIdx = idx;
         })
-        if(nearIdx === null) return;
+        if (nearIdx === null) return;
         const nearTile = directions[nearIdx].tile;
         const nearX = parseInt(nearTile.getAttribute("anchor-x"));
         const nearY = parseInt(nearTile.getAttribute("anchor-y"));
@@ -184,13 +201,19 @@ function anchorTile(tile) {
 
 function createTile(isGhost) {
     const tile = document.createElement("div");
-    tile.classList.add("tile");
-    tile.setAttribute("tile-index", tileCount);
+    if (isGhost) {
+        tile.classList.add("ghost-tile");
+        tile.style.visibility = "hidden";
+    } else {
+        tile.classList.add("tile");
+        tile.setAttribute("tile-index", tileCount);
+    }
     tile.setAttribute("anchor-x", 0);
     tile.setAttribute("anchor-y", 0);
     setUnits(tile, tileSize);
     tileContainer.append(tile);
     anchorTile(tile);
+    if (isGhost) return;
     tile.addEventListener("touchstart", event => {
         const touchLocation = event.targetTouches[0];
         tileOffset.x = touchLocation.pageX - tile.offsetLeft;
@@ -202,6 +225,14 @@ function createTile(isGhost) {
         const touchLocation = event.targetTouches[0];
         tile.style.left = (touchLocation.pageX - tileOffset.x) + 'px';
         tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
+        const ghostTile = document.querySelector(".ghost-tile");
+        if (isInGrid(tile)){
+            ghostTile.style.visibility = "visible";
+            giveCoords(tile, ghostTile);
+            anchorTile(ghostTile);
+        } else {
+            ghostTile.style.visibility = "hidden";
+        }
     });
     tile.addEventListener("touchend", event => {
         const tile = event.target;
@@ -210,6 +241,7 @@ function createTile(isGhost) {
             anchorTile(tile);
         } else tile.remove();
         if (parseInt(tile.attributes["tile-index"].value) === tileCount - 1) createTile();
+        document.querySelector(".ghost-tile").style.visibility = "hidden";
     });
     tileCount++;
 }
