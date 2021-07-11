@@ -13,10 +13,7 @@ const testField = document.querySelector("#test-field");
 
 const MAX_GRID_SIZE = 100;
 const MAX_TILE_SIZE = 10;
-const UNIT_SIZE = 2;
 const PIXEL_PER_REM = parseFloat(getComputedStyle(document.documentElement).fontSize);
-const UNIT_IN_PX = UNIT_SIZE * PIXEL_PER_REM;
-const HALF_UNIT_IN_PX = 0.5 * UNIT_SIZE * PIXEL_PER_REM;
 
 class Size {
     constructor(width, height) {
@@ -30,6 +27,10 @@ const tileOffset = {
     x: 0,
     y: 0,
 };
+
+let unitSize = Math.min(document.body.offsetWidth / gridSize.width, document.body.offsetHeight / gridSize.height) * 0.8 / PIXEL_PER_REM;
+let unitInPx = unitSize * PIXEL_PER_REM;
+let halfUnitInPx = 0.5 * unitSize * PIXEL_PER_REM;
 
 let tileCount = 0;
 let isGridMode = gridMode.checked;
@@ -46,7 +47,7 @@ function init() {
     tileHeight.value = tileSize.height;
     tileWidth.setAttribute("max", MAX_TILE_SIZE);
     tileHeight.setAttribute("max", MAX_TILE_SIZE);
-    setGrid();
+    resizeUnits();
     setGridMode();
     createTile(isGhost = true);
     createTile();
@@ -57,8 +58,8 @@ function setUnits(cont, size, isGhost) {
     const width = size.width;
     const height = size.height;
     cont.innerHTML = "";
-    cont.style.width = `${width * UNIT_SIZE}rem`;
-    cont.style.height = `${height * UNIT_SIZE}rem`;
+    cont.style.width = `${width * unitSize}rem`;
+    cont.style.height = `${height * unitSize}rem`;
     if (isGhost) return;
     cont.append(document.createElement("div"));
     cont.append(document.createElement("div"));
@@ -79,8 +80,8 @@ function setUnits(cont, size, isGhost) {
             idx ? item.line.append(div) : item.line.prepend(div);
         }
         item.line.style.position = "absolute";
-        item.line.style.width = `${width * UNIT_SIZE}rem`;
-        item.line.style.height = `${height * UNIT_SIZE}rem`;
+        item.line.style.width = "100%";
+        item.line.style.height = "100%";
         item.line.style.display = "grid";
         if (idx) item.line.style.gridTemplateColumns = `repeat(${item.repeat}, 1fr)`;
         else item.line.style.gridTemplateRows = `repeat(${item.repeat}, 1fr)`;
@@ -91,7 +92,6 @@ function setUnits(cont, size, isGhost) {
 function setGrid() {
     setUnits(grid, gridSize);
     gridContainer.style.gridTemplateColumns = `1fr ${gridSize.width}fr`;
-    Object.values(tileContainer.children).forEach(item => anchorTile(item));
     [{
         axis: xAxis,
         repeat: gridSize.width
@@ -104,10 +104,11 @@ function setGrid() {
             const div = document.createElement("div");
             div.setAttribute("index", i);
             div.innerText = i + 1;
-            div.style.width = div.style.height = UNIT_SIZE + "rem";
+            div.style.width = div.style.height = unitSize + "rem";
             item.axis.append(div);
         };
     });
+    Object.values(tileContainer.children).forEach(item => anchorTile(item));
 }
 
 function isInGrid(tile) {
@@ -116,15 +117,15 @@ function isInGrid(tile) {
     if (isMagnetMode) {
         return !(left + tile.offsetWidth / 2 < grid.offsetLeft || top + tile.offsetHeight / 2 < grid.offsetTop || left + tile.offsetWidth / 2 > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight / 2 > grid.offsetTop + grid.offsetHeight);
     } else {
-        return !(left + HALF_UNIT_IN_PX < grid.offsetLeft || top + HALF_UNIT_IN_PX < grid.offsetTop || left + tile.offsetWidth - HALF_UNIT_IN_PX > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight - HALF_UNIT_IN_PX > grid.offsetTop + grid.offsetHeight);
+        return !(left + halfUnitInPx < grid.offsetLeft || top + halfUnitInPx < grid.offsetTop || left + tile.offsetWidth - halfUnitInPx > grid.offsetLeft + grid.offsetWidth || top + tile.offsetHeight - halfUnitInPx > grid.offsetTop + grid.offsetHeight);
     }
 }
 
 function giveCoords(tile, targetTile) {
     if (!targetTile) targetTile = tile;
     const tileHeight = parseInt(tile.querySelector(".row").childElementCount);
-    const x = Math.round((tile.offsetLeft - grid.offsetLeft) / UNIT_IN_PX);
-    const y = gridSize.height - Math.round((tile.offsetTop - grid.offsetTop) / UNIT_IN_PX) - tileHeight;
+    const x = Math.round((tile.offsetLeft - grid.offsetLeft) / unitInPx);
+    const y = gridSize.height - Math.round((tile.offsetTop - grid.offsetTop) / unitInPx) - tileHeight;
     if (isMagnetMode) {
         class Direction {
             constructor(dir, dis, tile) {
@@ -156,7 +157,7 @@ function giveCoords(tile, targetTile) {
                     break;
             }
             for (let i = 1; i <= loop; i++) {
-                const temp = Object.values(document.elementsFromPoint(tile.offsetLeft + tile.offsetWidth / 2 - window.pageXOffset + item.dir[0] * i * UNIT_IN_PX, tile.offsetTop + tile.offsetHeight / 2 - window.pageYOffset + item.dir[1] * i * UNIT_IN_PX)).filter(item2 =>
+                const temp = Object.values(document.elementsFromPoint(tile.offsetLeft + tile.offsetWidth / 2 - window.pageXOffset + item.dir[0] * i * unitInPx, tile.offsetTop + tile.offsetHeight / 2 - window.pageYOffset + item.dir[1] * i * unitInPx)).filter(item2 =>
                     item2.classList.contains("tile") && item2.getAttribute("tile-index") !== tile.getAttribute("tile-index"));
                 if (temp.length !== 0) {
                     switch (idx) {
@@ -187,8 +188,8 @@ function giveCoords(tile, targetTile) {
         const nearTile = directions[nearIdx].tile;
         const nearX = parseInt(nearTile.getAttribute("anchor-x"));
         const nearY = parseInt(nearTile.getAttribute("anchor-y"));
-        targetTile.setAttribute("anchor-x", nearX - directions[nearIdx].dir[0] * nearTile.offsetWidth / UNIT_IN_PX);
-        targetTile.setAttribute("anchor-y", nearY + directions[nearIdx].dir[1] * nearTile.offsetHeight / UNIT_IN_PX);
+        targetTile.setAttribute("anchor-x", Math.round(nearX - directions[nearIdx].dir[0] * nearTile.offsetWidth / unitInPx));
+        targetTile.setAttribute("anchor-y", Math.round(nearY + directions[nearIdx].dir[1] * nearTile.offsetHeight / unitInPx));
         return true;
     } else {
         targetTile.setAttribute("anchor-x", x);
@@ -198,8 +199,8 @@ function giveCoords(tile, targetTile) {
 }
 
 function anchorTile(tile) {
-    tile.style.left = grid.offsetLeft + parseInt(tile.getAttribute("anchor-x")) * UNIT_IN_PX + "px";
-    tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y"))) * UNIT_IN_PX - tile.offsetHeight + "px";
+    tile.style.left = grid.offsetLeft + parseInt(tile.getAttribute("anchor-x")) * unitInPx + "px";
+    tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y"))) * unitInPx - tile.offsetHeight + "px";
     return true;
 }
 
@@ -223,7 +224,7 @@ function createTile(isGhost) {
         const touchLocation = event.targetTouches[0];
         tileOffset.x = touchLocation.pageX - tile.offsetLeft;
         tileOffset.y = touchLocation.pageY - tile.offsetTop;
-        const ghostTileSize = new Size(tile.offsetWidth / UNIT_IN_PX, tile.offsetHeight / UNIT_IN_PX);
+        const ghostTileSize = new Size(tile.offsetWidth / unitInPx, tile.offsetHeight / unitInPx);
         setUnits(ghostTile, ghostTileSize, true);
     });
     tile.addEventListener("touchmove", event => {
@@ -255,20 +256,38 @@ function setGridMode() {
     gridModeStyle.innerHTML = `.row, .col {visibility: ${isGridMode ? "visible" : "hidden"}}`;
 }
 
+function resizeUnits() {
+    const oldUnitSize = unitSize;
+    const oldUnitInPx = unitInPx;
+    unitSize = Math.min(document.body.offsetWidth / gridSize.width, document.body.offsetHeight / gridSize.height) * 0.8 / PIXEL_PER_REM;
+    if (unitSize !== oldUnitSize) {
+        unitInPx = unitSize * PIXEL_PER_REM;
+        halfUnitInPx = 0.5 * unitSize * PIXEL_PER_REM;
+        Object.values(tileContainer.children).forEach((item, idx) => {
+            const width = Math.round(item.offsetWidth / oldUnitInPx) * unitSize;
+            const height = Math.round(item.offsetHeight / oldUnitInPx) * unitSize;
+            item.style.width = `${width}rem`;
+            item.style.height = `${height}rem`;
+        });
+    }
+    setGrid();
+    axisShowStyle.innerHTML = `.x-axis, .y-axis {visibility: ${unitSize > 2 ? "visible" : "hidden"}}`;
+}
+
 // events
 
 gridWidth.addEventListener("input", event => {
     const value = event.target.value;
     if (!value) return;
     gridSize.width = parseInt(value);
-    setGrid();
+    resizeUnits();
 });
 
 gridHeight.addEventListener("input", event => {
     const value = event.target.value;
     if (!value) return;
     gridSize.height = parseInt(value);
-    setGrid();
+    resizeUnits();
 });
 
 tileWidth.addEventListener("input", event => {
@@ -298,6 +317,9 @@ document.head.append(gridModeStyle);
 gridMode.addEventListener("click", setGridMode);
 
 magnetMode.addEventListener("click", event => isMagnetMode = magnetMode.checked);
+
+const axisShowStyle = document.createElement("style");
+document.head.append(axisShowStyle);
 
 // initiate
 
