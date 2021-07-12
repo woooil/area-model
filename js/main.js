@@ -260,7 +260,7 @@ function setGridMode() {
 function resizeUnits() {
     const oldUnitSize = unitSize;
     const oldUnitInPx = unitInPx;
-    unitSize = Math.min(document.body.offsetWidth / gridSize.width * 0.8, (document.body.offsetHeight - gridContainer.offsetTop) / gridSize.height * 0.9) / PIXEL_PER_REM;
+    unitSize = Math.min(document.body.offsetWidth / gridSize.width, (document.body.offsetHeight - gridContainer.offsetTop) / gridSize.height) * 0.8 / PIXEL_PER_REM;
     if (unitSize !== oldUnitSize) {
         unitInPx = unitSize * PIXEL_PER_REM;
         halfUnitInPx = 0.5 * unitSize * PIXEL_PER_REM;
