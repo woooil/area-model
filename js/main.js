@@ -104,10 +104,11 @@ function setGrid() {
             const div = document.createElement("div");
             div.setAttribute("index", i);
             div.innerText = i + 1;
-            div.style.width = div.style.height = unitSize + "rem";
+            div.style.width = div.style.height = div.style.lineHeight = unitSize + "rem";
             item.axis.append(div);
         };
     });
+    xAxis.style.marginLeft = yAxis.style.marginBottom = grid.style.marginTop = 0.5 * unitSize + "rem";
     Object.values(tileContainer.children).forEach(item => anchorTile(item));
 }
 
