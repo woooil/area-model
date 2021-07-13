@@ -8,6 +8,7 @@ const tileWidth = document.querySelector(".tile-width");
 const tileHeight = document.querySelector(".tile-height");
 const tileContainer = document.querySelector(".tile-container");
 const gridMode = document.querySelector(".grid-mode");
+const labelModeBox = document.querySelector(".label-mode-box");
 const magnetMode = document.querySelector(".magnet-mode");
 const testField = document.querySelector("#test-field");
 
@@ -33,8 +34,9 @@ let unitInPx;
 let halfUnitInPx;
 
 let tileCount = 0;
-let isGridMode = gridMode.checked;
-let isMagnetMode = magnetMode.checked;
+let isGridMode;
+let isMagnetMode;
+let labelMode;
 
 // functions
 
@@ -52,6 +54,7 @@ function init() {
     createTile(isGhost = true);
     createTile();
     createTile();
+    setLabelMode();
 }
 
 function setUnits(cont, size, isGhost) {
@@ -202,6 +205,7 @@ function giveCoords(tile, targetTile) {
 function anchorTile(tile) {
     tile.style.left = grid.offsetLeft + parseInt(tile.getAttribute("anchor-x")) * unitInPx + "px";
     tile.style.top = grid.offsetTop + (gridSize.height - parseInt(tile.getAttribute("anchor-y"))) * unitInPx - tile.offsetHeight + "px";
+    setLabelMode();
     return true;
 }
 
@@ -232,8 +236,9 @@ function createTile(isGhost) {
         event.preventDefault();
         const tile = event.target;
         const touchLocation = event.targetTouches[0];
-        tile.style.left = (touchLocation.pageX - tileOffset.x) + 'px';
-        tile.style.top = (touchLocation.pageY - tileOffset.y) + 'px';
+        tile.classList.add("moving");
+        tile.style.left = (touchLocation.pageX - tileOffset.x) + "px";
+        tile.style.top = (touchLocation.pageY - tileOffset.y) + "px";
         if (isInGrid(tile) && giveCoords(tile, ghostTile) && anchorTile(ghostTile) && isInGrid(ghostTile)) {
             ghostTile.style.visibility = "visible";
         } else {
@@ -242,6 +247,7 @@ function createTile(isGhost) {
     });
     tile.addEventListener("touchend", event => {
         const tile = event.target;
+        tile.classList.remove("moving");
         if (isInGrid(tile) && isInGrid(ghostTile)) {
             giveCoords(tile);
             anchorTile(tile);
@@ -272,17 +278,52 @@ function resizeUnits() {
         });
     }
     setGrid();
-    axisShowStyle.innerHTML = `.x-axis, .y-axis {visibility: ${unitSize > 2 ? "visible" : "hidden"}}`;
+    if (unitSize < 2) labelModeBox.querySelector(`[value="hide"]`).checked = true;
+    else labelModeBox.querySelector(`[value="auto"]`).checked = true;
+    setLabelMode();
+}
+
+function setLabelMode() {
+    labelModeBox.querySelectorAll("input").forEach(item => {
+        if (item.checked) {
+            labelMode = item.value;
+            return;
+        }
+    });
+    switch (labelMode) {
+        case ("show"):
+            labelModeStyle.innerHTML = `.x-axis, .y-axis {visibility: visible}`;
+            break;
+        case ("hide"):
+            labelModeStyle.innerHTML = `.x-axis, .y-axis {visibility: hidden}`;
+            break;
+        case ("auto"):
+            let label = [tileSize.width, tileSize.height];
+            [gridSize.width, gridSize.height].forEach((item, idx) => {
+                let ghost = false;
+                for (let i = 1; i <= item; i++) {
+                    const temp = Object.values(document.elementsFromPoint(grid.offsetLeft - window.pageXOffset + (1 - idx) * i * unitInPx + halfUnitInPx, grid.offsetTop + grid.offsetHeight - window.pageYOffset - idx * i * unitInPx - halfUnitInPx)).filter(item2 =>
+                        (item2.classList.contains("tile") && !item2.classList.contains("moving")) || item2.classList.contains("ghost-tile"));
+                    if (temp.length !== 0) {
+                        if (ghost === true && !temp[0].classList.contains("ghost-tile")) break;
+                        if (temp[0].classList.contains("ghost-tile") && temp[0].style.visibility === "visible") ghost = true;
+                        label[idx] = i + 1;
+                    } else break;
+                }
+            });
+            labelModeStyle.innerHTML = `.x-axis, .y-axis {visibility: hidden}`;
+            labelModeStyle.innerHTML += `.x-axis :last-child, .y-axis :last-child, .x-axis :nth-child(${label[0]}), .y-axis :nth-child(${label[1]}) {visibility: visible}`;
+    }
 }
 
 // events
 
 window.addEventListener("orientationchange", e => {
-    var afterOrientationChange = function() {
+    var afterOrientationChange = function () {
         resizeUnits();
-        window.removeEventListener('resize', afterOrientationChange);
+        window.removeEventListener("resize", afterOrientationChange);
     };
-    window.addEventListener('resize', afterOrientationChange);
+    window.addEventListener("resize", afterOrientationChange);
 });
 
 gridWidth.addEventListener("input", event => {
@@ -325,13 +366,17 @@ const gridModeStyle = document.createElement("style");
 document.head.append(gridModeStyle);
 gridMode.addEventListener("click", setGridMode);
 
-magnetMode.addEventListener("click", event => isMagnetMode = magnetMode.checked);
+const labelModeStyle = document.createElement("style");
+document.head.append(labelModeStyle);
+labelModeBox.querySelectorAll("input").forEach(item => {
+    item.addEventListener("click", setLabelMode);
+})
 
-const axisShowStyle = document.createElement("style");
-document.head.append(axisShowStyle);
+isMagnetMode = magnetMode.checked;
+magnetMode.addEventListener("click", event => isMagnetMode = magnetMode.checked);
 
 // initiate
 
 init();
 const ghostTile = tileContainer.querySelector(".ghost-tile");
-const originTile = tileContainer.querySelector('[tile-index="0"]');
+const originTile = tileContainer.querySelector(`[tile-index="0"]`);
