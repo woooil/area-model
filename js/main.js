@@ -94,6 +94,8 @@ function setUnits(cont, size, isGhost) {
 
 function setGrid() {
     setUnits(grid, gridSize);
+    gridContainer.style.width = `${(gridSize.width + 1) * unitSize}rem`;
+    gridContainer.style.height = `${(gridSize.height + 1) * unitSize}rem`;
     gridContainer.style.gridTemplateColumns = `1fr ${gridSize.width}fr`;
     [{
         axis: xAxis,
@@ -107,7 +109,8 @@ function setGrid() {
             const div = document.createElement("div");
             div.setAttribute("index", i);
             div.innerText = i + 1;
-            div.style.width = div.style.height = div.style.lineHeight = unitSize + "rem";
+            if(idx) div.style.height = div.style.lineHeight = unitSize + "rem";
+            else div.style.width= unitSize + "rem";
             item.axis.append(div);
         };
     });
@@ -278,9 +281,10 @@ function resizeUnits() {
         });
     }
     setGrid();
-    if (unitSize < 2) labelModeBox.querySelector(`[value="hide"]`).checked = true;
-    else labelModeBox.querySelector(`[value="auto"]`).checked = true;
-    setLabelMode();
+    if (unitSize < 2 && labelMode === "show"){
+        labelModeBox.querySelector(`[value="auto"]`).checked = true;
+        setLabelMode();
+    }
 }
 
 function setLabelMode() {

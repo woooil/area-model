@@ -25,9 +25,18 @@ body {
     flex-direction: column;
 }
 
+.settings * {
+    margin-bottom: 2px;
+}
+
 input {
     width: var(--default-size);
     height: var(--default-size);
+}
+
+input[type="number"] {
+    width: 5rem;
+    height: 2rem;
 }
 
 .row div,
@@ -51,6 +60,8 @@ input {
 
 .grid-container {
     display: grid;
+    justify-content: center;
+    align-content: center; 
 }
 
 .tile-container {
@@ -87,9 +98,16 @@ input {
     flex-direction: column-reverse;
 }
 
-.x-axis div,
-.y-axis div {
+.x-axis div {
+    height: var(--default-size);
     text-align: center;
+    margin-bottom: auto;
+}
+
+.y-axis div {
+    width: var(--default-size);
+    text-align: right;
+    margin-right: 0.5rem;
 }
 
 .tile-size {
