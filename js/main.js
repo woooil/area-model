@@ -281,10 +281,13 @@ function resizeUnits() {
         });
     }
     setGrid();
-    if (unitSize < 2 && labelMode === "show"){
-        labelModeBox.querySelector(`[value="auto"]`).checked = true;
-        setLabelMode();
+    if (unitSize < 2){
+        if(labelMode === "show") labelModeBox.querySelector(`[value="auto"]`).checked = true;
+        labelModeBox.querySelector(`[value="show"]`).disabled = true;
+    } else {
+        labelModeBox.querySelector(`[value="show"]`).disabled = false;
     }
+    setLabelMode();
 }
 
 function setLabelMode() {
@@ -330,21 +333,21 @@ window.addEventListener("orientationchange", e => {
     window.addEventListener("resize", afterOrientationChange);
 });
 
-gridWidth.addEventListener("input", event => {
+gridWidth.addEventListener("focusout", event => {
     const value = event.target.value;
     if (!value) return;
     gridSize.width = parseInt(value);
     resizeUnits();
 });
 
-gridHeight.addEventListener("input", event => {
+gridHeight.addEventListener("focusout", event => {
     const value = event.target.value;
     if (!value) return;
     gridSize.height = parseInt(value);
     resizeUnits();
 });
 
-tileWidth.addEventListener("input", event => {
+tileWidth.addEventListener("focusout", event => {
     const value = event.target.value;
     if (!value) return;
     const newTile = tileContainer.querySelector(`[tile-index="${tileCount - 1}"]`);
@@ -355,7 +358,7 @@ tileWidth.addEventListener("input", event => {
     anchorTile(originTile);
 });
 
-tileHeight.addEventListener("input", event => {
+tileHeight.addEventListener("focusout", event => {
     const value = event.target.value;
     if (!value) return;
     const newTile = tileContainer.querySelector(`[tile-index="${tileCount - 1}"]`);
