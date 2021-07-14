@@ -35,8 +35,8 @@ input {
 }
 
 input[type="number"] {
-    position: absolute;
-    width: 4rem;
+    width: 5rem;
+    height: 2rem;
 }
 
 .row div,
@@ -98,13 +98,13 @@ input[type="number"] {
     flex-direction: column-reverse;
 }
 
-.x-axis div, .grid-width, .tile-width {
+.x-axis div {
     height: var(--default-size);
     text-align: center;
     margin-bottom: auto;
 }
 
-.y-axis div, .grid-height, .tile-height {
+.y-axis div {
     width: var(--default-size);
     text-align: right;
     margin-right: 0.5rem;

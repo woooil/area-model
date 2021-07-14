@@ -109,22 +109,12 @@ function setGrid() {
             const div = document.createElement("div");
             div.setAttribute("index", i);
             div.innerText = i + 1;
-            if (idx) div.style.height = div.style.lineHeight = unitSize + "rem";
-            else div.style.width = unitSize + "rem";
+            if(idx) div.style.height = div.style.lineHeight = unitSize + "rem";
+            else div.style.width= unitSize + "rem";
             item.axis.append(div);
         };
     });
     xAxis.style.marginLeft = yAxis.style.marginBottom = grid.style.marginTop = 0.5 * unitSize + "rem";
-    [
-        [gridWidth, xAxis.querySelector(":last-child")],
-        [gridHeight, yAxis.querySelector(":last-child")],
-        [tileWidth, xAxis.querySelector(`:nth-child(${tileSize.width})`)],
-        [tileHeight, yAxis.querySelector(`:nth-child(${tileSize.height})`)]
-    ].forEach((item, idx) => {
-        if (idx % 2) item[0].style.height = item[0].style.lineHeight = unitSize + "rem";
-        item[0].style.top = item[1].offsetTop + "px";
-        item[0].style.left = item[1].offsetLeft + item[1].offsetWidth - item[0].offsetWidth + "px";
-    });
     Object.values(tileContainer.children).forEach(item => anchorTile(item));
 }
 
@@ -291,10 +281,10 @@ function resizeUnits() {
         });
     }
     setGrid();
-    if (unitSize < 2 && labelMode === "show") {
+    if (unitSize < 2 && labelMode === "show"){
         labelModeBox.querySelector(`[value="auto"]`).checked = true;
+        setLabelMode();
     }
-    setLabelMode();
 }
 
 function setLabelMode() {
@@ -327,7 +317,6 @@ function setLabelMode() {
             });
             labelModeStyle.innerHTML = `.x-axis, .y-axis {visibility: hidden}`;
             labelModeStyle.innerHTML += `.x-axis :last-child, .y-axis :last-child, .x-axis :nth-child(${label[0]}), .y-axis :nth-child(${label[1]}) {visibility: visible}`;
-            break;
     }
 }
 
@@ -361,8 +350,9 @@ tileWidth.addEventListener("input", event => {
     const newTile = tileContainer.querySelector(`[tile-index="${tileCount - 1}"]`);
     tileSize.width = parseInt(value);
     setUnits(newTile, tileSize);
+    anchorTile(newTile);
     setUnits(originTile, tileSize);
-    resizeUnits();
+    anchorTile(originTile);
 });
 
 tileHeight.addEventListener("input", event => {
@@ -371,8 +361,9 @@ tileHeight.addEventListener("input", event => {
     const newTile = tileContainer.querySelector(`[tile-index="${tileCount - 1}"]`);
     tileSize.height = parseInt(value);
     setUnits(newTile, tileSize);
+    anchorTile(newTile);
     setUnits(originTile, tileSize);
-    resizeUnits();
+    anchorTile(originTile);
 });
 
 const gridModeStyle = document.createElement("style");
